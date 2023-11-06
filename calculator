@@ -1,0 +1,142 @@
+#работающий калькулятор поддерживающий отрицательные числа, приоритетность операций
+nums = {
+    'один': 1,
+    'два': 2,
+    'три': 3,
+    'четыре': 4,
+    'пять': 5,
+    'шесть': 6,
+    'семь': 7,
+    'восемь': 8,
+    'девять': 9,
+    'десять': 10,
+    'одиннадцать': 11,
+    'двенадцать': 12,
+    'тринадцать': 13,
+    'четырнадцать': 14,
+    'пятнадцать': 15,
+    'шестнадцать': 16,
+    'семнадцать': 17,
+    'восемьнадцать': 18,
+    'девятнадцать': 19,
+    'двадцать': 20,
+    'тридцать': 30,
+    'сорок': 40,
+    'пятьдесят': 50,
+    'шестьдесят': 60,
+    'семьдесят': 70,
+    'восемьдесят': 80,
+    'девяносто': 90,
+    'сто': 100,
+    'двести': 200,
+    'триста': 300,
+    'четыреста': 400,
+    'пятьсот': 500,
+    'шестьсот': 600,
+    'семьсот': 700,
+    'восемьсот': 800,
+    'девятьсот': 900,
+    'одна тысяча': 1000,
+    'две тысячи': 2000,
+    'три тысячи': 3000,
+    'четыре тысячи': 4000,
+    'пять тысяч': 5000,
+    'шесть тысяч': 6000,
+    'семь тысяч': 7000,
+    'восемь тысяч': 8000,
+    'девять тысяч': 9000
+}       #алфавит чисел
+symbols = {
+    'минус':'-',
+    'плюс':'+',
+    'разделить':'/',
+    'умножить':'*'
+}   #алфавит символов(не чисел)
+sequence = input('Введите ваш запрос:').split()
+p = 0
+while p != len(sequence)-1:     #цикл для удаления слова 'на' в списке, для корректной работы программы
+    if sequence[p] == 'на':
+        sequence.remove(sequence[p])
+        continue
+    p += 1
+def operation(ints):            #функция для подсчета значений
+    i = 1
+    while i <= len(ints)-1:             #цикл пробегающийся по обработанному запросу, ищущий в приоритете деление и умножение
+        if ints[i] == 'умножить':
+            ints.insert(ints.index('умножить')+2, ints[ints.index('умножить')-1] * ints[ints.index('умножить')+1])
+            del ints[ints.index('умножить')-1:ints.index('умножить')+2]
+            return operation(ints)
+        if ints[i] == 'разделить':
+            ints.insert(ints.index('разделить')+2, ints[ints.index('разделить')-1] / ints[ints.index('разделить')+1])
+            del ints[ints.index('разделить')-1:ints.index('разделить')+2]
+            return operation(ints)
+        i += 1
+    i = 1
+    while i <= len(ints)-1:             #цикл пробегающийся по обработанному запросу, ищущий в приоритете сложение и вычитание
+        if ints[i] == 'плюс':
+            ints.insert(ints.index('плюс')+2, ints[ints.index('плюс')-1] + ints[ints.index('плюс')+1])
+            del ints[ints.index('плюс')-1:ints.index('плюс')+2]
+            return operation(ints)
+        if ints[i] == 'минус':
+            ints.insert(ints.index('минус')+2, ints[ints.index('минус')-1] - ints[ints.index('минус')+1])
+            del ints[ints.index('минус')-1:ints.index('минус')+2]
+            return operation(ints)
+        i += 1
+    return ints[0]              #в результате должен остаться список с единственным значением, ответом на выражение в числовом значении,
+                                # поэтому можно вывести только первый элемент списка
+def interpritation(answer):         #функция для перевода числового значения в разбиение его по разрядам
+    parts, counter = [], 0
+    if str(answer)[0] == '-':       #проверка на отрицательное значение ответа, дабы вернуть корректный ответ
+        counter += 1
+        parts.append('-')
+        answer -= (2 * answer)
+    if '.' in str(answer):
+        inter_answer = int(str(answer[:answer.index('.')]))
+        fract_answer = int(str(answer[answer.index('.')+1:]))
+    lenght = len(str(answer))
+    while lenght != 0:
+        if lenght == 2 and str(answer)[-2] == '1':
+            parts.append(int(str(answer)[len(str(answer)) - lenght]) * (10 ** (lenght - 1)) + (int(str(answer)[len(str(answer)) - lenght+1]) * (10 ** (lenght - 2))))
+            return parts    #проверка на числа от 11 до 19, которые в русском языке записываются по другим правилам относительно остальных чисел
+        parts.append(int(str(answer)[len(str(answer)) - lenght]) * (10 ** (lenght - 1)))
+        lenght -= 1
+    return parts
+def get_key(parts):             #функция для возврата ключа словаря по его значению
+    answer_stroke = ''
+    for i in parts:
+        for j, v in symbols.items():
+            if i == v:
+                answer_stroke += j + ' '
+        for j, v in nums.items():
+            if i == v:
+                answer_stroke += j + ' '
+    return answer_stroke
+ints, i = [], 0
+while i <= len(sequence)-2:                         #цикл обработки вводимой строки, с переводом чисел в интовые значения
+    if sequence[i] in symbols:          #проверка оставляет в списке операции над числами в строковом значении
+        ints.append(sequence[i])
+    if sequence[i] in nums and sequence[i+1] not in nums:   #если встречает число перед строкой, просто добавляет интовое значение числа
+        ints.append(nums.get(sequence[i]))
+    if i != len(sequence)-1:
+        if sequence[i] in nums and sequence[i+1] in nums:   #если встречает в списке два подряд идущих интовых значения складывает их и эту сумму возвращает в список
+            ints.append(nums.get(sequence[i])+nums.get(sequence[i+1]))
+            i += 1
+    i +=1
+if i != len(sequence):          #брудфорс решение по проверке последнего элемента списка
+    if sequence[i] in symbols:
+        ints.append(sequence[i])
+    if sequence[i] in nums:
+        ints.append(nums.get(sequence[i]))
+i = 0
+while i <= len(ints)-1:
+    if type(ints[i]) is str and ints[i+1] == 'минус':
+        ints.insert(i+1,-ints[i+2])
+        del ints[i+2:i+4]
+    i += 1
+print(ints)
+print(operation(ints))
+print(interpritation(operation(ints)))
+print(get_key(interpritation(operation(ints))))
+
+
+
